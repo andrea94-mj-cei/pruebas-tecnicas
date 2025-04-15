@@ -32,10 +32,12 @@ const Galeria = () => {
       const data = await response.json();
       
       if (data.stat === 'fail') {
-        throw new Error(data.message || 'Error en la API de Flickr');
+        // Mensaje de error en castellano
+        const mensajeError = 'Error en la API de Flickr: ' + (data.message || 'Error desconocido');
+        throw new Error(mensajeError);
       }
       
-      // Convertir la respuesta de la API a nuestro formato de imágenes
+      
       const fetchedImages = data.photos.photo.map(photo => ({
         id: photo.id,
         title: photo.title,
@@ -44,9 +46,16 @@ const Galeria = () => {
       }));
       
       setImages(fetchedImages);
+      
+      // Si no hay imágenes pero no hubo error de API
+      if (fetchedImages.length === 0) {
+        setError('No se encontraron imágenes para esta búsqueda');
+      }
+      
     } catch (err) {
-      console.error('Error en el fetch', err);
-      setError(err.message);
+      console.error('Error en la carga de imágenes:', err);
+      
+      setError(err.message || 'Error desconocido al cargar las imágenes');
     } finally {
       setLoading(false);
     }
@@ -86,12 +95,9 @@ const Galeria = () => {
       </div>
       
       {images.length === 0 && !loading && !error && (
-        <div className="no-results">No se encontraron imágenes</div>
+        <div className="no-results">No se encontraron imágenes para esta búsqueda</div>
       )}
       
-      <div className="gallery-footer">
-        <p>Galería creada con React y la API de Flickr</p>
-      </div>
     </div>
   );
 };
